@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "colors",
+  "info": {
+    "singularName": "color",
+    "pluralName": "colors",
+    "displayName": "Color",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "buttonText": {
+      "type": "string"
+    },
+    "background": {
+      "type": "string"
+    },
+    "buttonBackground": {
+      "type": "string"
+    },
+    "theme": {
+      "type": "string"
+    }
+  }
+}
