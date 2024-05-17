@@ -143,9 +143,9 @@ const renderProfile = async () => {
       `http://localhost:1337/api/users/${user.id}?populate=*`
     );
 
-    /// Profile Div ///
+    /// Login message ///
     let loginMessage = document.createElement("h2");
-    loginMessage.innerText = `Welcome ${user.username}`;
+    loginMessage.innerText = `${user.username}´s Book`;
     profilePage.append(loginMessage);
 
     //// Book Lists ////
@@ -384,6 +384,10 @@ const renderLoginBooks = async () => {
     `http://localhost:1337/api/users/${user.id}?populate=*`
   );
   let readingList = userData.data.reading_lists;
+
+  if (userDiv) {
+    userDiv.innerHTML = "";
+  }
 
   // Book Div
   if (bookDiv) {
