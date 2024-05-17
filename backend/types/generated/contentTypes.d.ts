@@ -362,115 +362,6 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
-export interface ApiBookBook extends Schema.CollectionType {
-  collectionName: 'books';
-  info: {
-    singularName: 'book';
-    pluralName: 'books';
-    displayName: 'Book';
-    description: '';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    title: Attribute.String;
-    author: Attribute.String;
-    page: Attribute.Integer;
-    published: Attribute.Date;
-    image: Attribute.Media;
-    user: Attribute.Relation<
-      'api::book.book',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    ratings: Attribute.Relation<
-      'api::book.book',
-      'oneToMany',
-      'api::rating.rating'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'api::book.book', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'api::book.book', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
-export interface ApiColorColor extends Schema.CollectionType {
-  collectionName: 'colors';
-  info: {
-    singularName: 'color';
-    pluralName: 'colors';
-    displayName: 'Color';
-    description: '';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    buttonText: Attribute.String;
-    background: Attribute.String;
-    buttonBackground: Attribute.String;
-    theme: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::color.color',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::color.color',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiRatingRating extends Schema.CollectionType {
-  collectionName: 'ratings';
-  info: {
-    singularName: 'rating';
-    pluralName: 'ratings';
-    displayName: 'Rating';
-    description: '';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    rating: Attribute.Integer;
-    book: Attribute.Relation<
-      'api::rating.rating',
-      'manyToOne',
-      'api::book.book'
-    >;
-    reviewer: Attribute.Relation<
-      'api::rating.rating',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::rating.rating',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::rating.rating',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -906,6 +797,145 @@ export interface PluginI18NLocale extends Schema.CollectionType {
   };
 }
 
+export interface ApiBookBook extends Schema.CollectionType {
+  collectionName: 'books';
+  info: {
+    singularName: 'book';
+    pluralName: 'books';
+    displayName: 'Book';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    title: Attribute.String;
+    author: Attribute.String;
+    page: Attribute.Integer;
+    published: Attribute.Date;
+    image: Attribute.Media;
+    user: Attribute.Relation<
+      'api::book.book',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    ratings: Attribute.Relation<
+      'api::book.book',
+      'oneToMany',
+      'api::rating.rating'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::book.book', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::book.book', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
+export interface ApiColorColor extends Schema.CollectionType {
+  collectionName: 'colors';
+  info: {
+    singularName: 'color';
+    pluralName: 'colors';
+    displayName: 'Color';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    buttonText: Attribute.String;
+    background: Attribute.String;
+    buttonBackground: Attribute.String;
+    theme: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::color.color',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::color.color',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiRatingRating extends Schema.CollectionType {
+  collectionName: 'ratings';
+  info: {
+    singularName: 'rating';
+    pluralName: 'ratings';
+    displayName: 'Rating';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    rating: Attribute.Integer;
+    book: Attribute.Relation<
+      'api::rating.rating',
+      'manyToOne',
+      'api::book.book'
+    >;
+    reviewer: Attribute.Relation<
+      'api::rating.rating',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::rating.rating',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::rating.rating',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiThemeTheme extends Schema.SingleType {
+  collectionName: 'themes';
+  info: {
+    singularName: 'theme';
+    pluralName: 'themes';
+    displayName: 'Theme';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    color: Attribute.Enumeration<['Pink', 'Blue', 'Purple', 'Green']>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::theme.theme',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::theme.theme',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -916,9 +946,6 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
-      'api::book.book': ApiBookBook;
-      'api::color.color': ApiColorColor;
-      'api::rating.rating': ApiRatingRating;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
@@ -927,6 +954,10 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'plugin::i18n.locale': PluginI18NLocale;
+      'api::book.book': ApiBookBook;
+      'api::color.color': ApiColorColor;
+      'api::rating.rating': ApiRatingRating;
+      'api::theme.theme': ApiThemeTheme;
     }
   }
 }

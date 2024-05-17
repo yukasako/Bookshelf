@@ -2,12 +2,14 @@
 let userDiv = document.querySelector("#users");
 let bookDiv = document.querySelector("#books");
 let header = document.querySelector("#header");
+let profilePage = document.querySelector("#profilePage");
 
 //////////////////// Functions ////////////////////
 
 ////// 1, For Public User //////
 const renderLoginPage = () => {
-  userDiv.innerHTML = `
+  if (userDiv) {
+    userDiv.innerHTML = `
     <input type="text" id="username" placeholder="Username" />
     <input type="text" id="email" placeholder="E-mail*(Registration)" />
     <input type="password" id="password" placeholder="Password" />
@@ -16,42 +18,47 @@ const renderLoginPage = () => {
     <button id="registerBtn" onclick="registerUser()">Register</button>
     </div>
     `;
+  }
 };
 const renderBooks = async () => {
-  bookDiv.innerHTML = "";
-  let response = await axios.get("http://localhost:1337/api/books?populate=*");
-  let books = response.data.data;
+  if (bookDiv) {
+    bookDiv.innerHTML = "";
+    let response = await axios.get(
+      "http://localhost:1337/api/books?populate=*"
+    );
+    let books = response.data.data;
 
-  books.forEach((book) => {
-    let bookCard = document.createElement("article");
-    bookCard.classList = "bookCard";
+    books.forEach((book) => {
+      let bookCard = document.createElement("article");
+      bookCard.classList = "bookCard";
 
-    // Ratingの平均値を出す
-    let totalRating = 0;
-    let reviewCount = 0;
-    let reviews = book.attributes.ratings.data;
-    reviews.forEach((review) => {
-      let rating = review.attributes.rating;
-      totalRating += rating;
-      reviewCount++;
+      // Ratingの平均値を出す
+      let totalRating = 0;
+      let reviewCount = 0;
+      let reviews = book.attributes.ratings.data;
+      reviews.forEach((review) => {
+        let rating = review.attributes.rating;
+        totalRating += rating;
+        reviewCount++;
+      });
+      let averageScore = Math.round((totalRating / reviewCount) * 10) / 10;
+
+      //DOMに書き出し
+      let bookImage = document.createElement("img");
+      bookImage.src = `http://localhost:1337${book.attributes.image.data[0].attributes.url}`;
+
+      let bookDescription = document.createElement("div");
+      bookDescription.innerHTML = `
+          <p>Title: ${book.attributes.title}</p>
+          <p>Author: ${book.attributes.author}</p>
+          <p>Pages: ${book.attributes.page}</p>
+          <p>Rating Average: ${averageScore}</p>
+        `;
+
+      bookCard.append(bookImage, bookDescription);
+      bookDiv.append(bookCard);
     });
-    let averageScore = Math.round((totalRating / reviewCount) * 10) / 10;
-
-    //DOMに書き出し
-    let bookImage = document.createElement("img");
-    bookImage.src = `http://localhost:1337${book.attributes.image.data[0].attributes.url}`;
-
-    let bookDescription = document.createElement("div");
-    bookDescription.innerHTML = `
-        <p>Title: ${book.attributes.title}</p>
-        <p>Author: ${book.attributes.author}</p>
-        <p>Pages: ${book.attributes.page}</p>
-        <p>Rating Average: ${averageScore}</p>
-      `;
-
-    bookCard.append(bookImage, bookDescription);
-    bookDiv.append(bookCard);
-  });
+  }
 };
 // Login Logout
 const registerUser = async () => {
@@ -116,151 +123,134 @@ const logout = () => {
 /////// 2, For Authenticated User //////
 //// 2-1, Render Profile Page
 const renderProfile = async () => {
-  userDiv.innerHTML = "";
-  let user = JSON.parse(sessionStorage.getItem("user"));
-  let userData = await axios.get(
-    `http://localhost:1337/api/users/${user.id}?populate=*`
-  );
+  // Header
+  let userOptions = document.createElement("div");
+  userOptions.innerHTML = `
+      <a href="./index.html" class="link">Bookshelf</a>
+      <a href="./profile.html" class="link">UserProfile</a>
+      <a href="./index.html">
+      <button id="logout" onclick="logout()">Logout</button>
+      </a>   
+      `;
 
-  /// Profile Div ///
-  let profileDiv = document.createElement("div");
-  profileDiv.id = "profile";
-  profileDiv.innerHTML = `
-        <button id="logout" onclick="logout()">Logout</button>
-    `;
   if (header.childElementCount < 2) {
-    header.append(profileDiv);
+    header.append(userOptions);
   }
+  if (profilePage) {
+    profilePage.innerHTML = "";
+    let user = JSON.parse(sessionStorage.getItem("user"));
+    let userData = await axios.get(
+      `http://localhost:1337/api/users/${user.id}?populate=*`
+    );
 
-  let loginMessage = document.createElement("h2");
-  loginMessage.innerText = `Welcome ${user.username}`;
-  userDiv.append(loginMessage);
+    /// Profile Div ///
+    let loginMessage = document.createElement("h2");
+    loginMessage.innerText = `Welcome ${user.username}`;
+    profilePage.append(loginMessage);
 
-  // Color //
-  await renderColors(profileDiv);
-  await colorSelect();
+    //// Book Lists ////
+    let bookLists = document.createElement("div");
+    profilePage.append(bookLists);
 
-  //// Book Lists ////
-  let bookLists = document.createElement("div");
-  userDiv.append(bookLists);
+    //////// Render Reading List ////////
+    let readingList = userData.data.reading_lists;
+    let readingUl = document.createElement("ul");
+    renderReadingList(user.id, readingList, readingUl);
 
-  //////// Render Reading List ////////
-  let readingList = userData.data.reading_lists;
-  let readingUl = document.createElement("ul");
-  renderReadingList(user.id, readingList, readingUl);
+    let readingH3 = document.createElement("h3");
+    readingH3.innerHTML = `Book to Read`;
 
-  let readingH3 = document.createElement("h3");
-  readingH3.innerHTML = `Book to Read`;
-
-  // Sort ReadingList
-  let sortReadingSelect = document.createElement("select");
-  sortReadingSelect.innerHTML = `
+    // Sort ReadingList
+    let sortReadingSelect = document.createElement("select");
+    sortReadingSelect.innerHTML = `
       <option value="">Sort</option>
       <option value="title">Title</option>
       <option value="author">Author</option>
       <option value="page">Page</option>
     `;
-  // Sortは破壊的処理なのでコピーを作成し、ソートしてDOMに書き出す。
-  let sortReadingList = readingList.slice();
-  sortReadingSelect.addEventListener("change", () => {
-    sortList(sortReadingList, sortReadingSelect.value);
-    renderReadingList(user.id, sortReadingList, readingUl);
-  });
+    // Sortは破壊的処理なのでコピーを作成し、ソートしてDOMに書き出す。
+    let sortReadingList = readingList.slice();
+    sortReadingSelect.addEventListener("change", () => {
+      sortList(sortReadingList, sortReadingSelect.value);
+      renderReadingList(user.id, sortReadingList, readingUl);
+    });
 
-  let h3AndSort = document.createElement("div");
-  h3AndSort.classList = "h3AndSort";
-  h3AndSort.append(readingH3, sortReadingSelect);
-  let readingDiv = document.createElement("div");
-  readingDiv.append(h3AndSort, readingUl);
-  readingDiv.classList = "list";
-  bookLists.append(readingDiv);
+    let h3AndSort = document.createElement("div");
+    h3AndSort.classList = "h3AndSort";
+    h3AndSort.append(readingH3, sortReadingSelect);
+    let readingDiv = document.createElement("div");
+    readingDiv.append(h3AndSort, readingUl);
+    readingDiv.classList = "list";
+    bookLists.append(readingDiv);
 
-  ///////// Render Reviewed List ////////
-  // Data
-  let ratedID = userData.data.ratings.map((rating) => {
-    return rating.id;
-  });
+    ///////// Render Reviewed List ////////
+    // Data
+    let ratedID = userData.data.ratings.map((rating) => {
+      return rating.id;
+    });
 
-  let reviewList = [];
-  await Promise.all(
-    ratedID.map(async (id) => {
-      let rating = await axios.get(
-        `http://localhost:1337/api/ratings/${id}?populate=*`
-      );
-      reviewList.push(rating.data.data);
-    })
-  );
+    let reviewList = [];
+    await Promise.all(
+      ratedID.map(async (id) => {
+        let rating = await axios.get(
+          `http://localhost:1337/api/ratings/${id}?populate=*`
+        );
+        reviewList.push(rating.data.data);
+      })
+    );
 
-  // DOM
-  let reviewUl = document.createElement("ul");
-  renderReviewList(reviewList, reviewUl);
+    // DOM
+    let reviewUl = document.createElement("ul");
+    renderReviewList(reviewList, reviewUl);
 
-  // Sort ReadingList
-  let sortReviewSelect = document.createElement("select");
-  sortReviewSelect.innerHTML = `
+    // Sort ReadingList
+    let sortReviewSelect = document.createElement("select");
+    sortReviewSelect.innerHTML = `
         <option value="">Sort</option>
         <option value="title">Title</option>
         <option value="author">Author</option>
         <option value="rating">Your rating</option>
       `;
-  // Sortは破壊的処理なのでコピーを作成し、ソートしてDOMに書き出す。
-  let sortReviewList = reviewList.slice();
-  sortReviewSelect.addEventListener("change", () => {
-    sortRatedList(sortReviewList, sortReviewSelect.value);
-    renderReviewList(sortReviewList, reviewUl);
-  });
+    // Sortは破壊的処理なのでコピーを作成し、ソートしてDOMに書き出す。
+    let sortReviewList = reviewList.slice();
+    sortReviewSelect.addEventListener("change", () => {
+      sortRatedList(sortReviewList, sortReviewSelect.value);
+      renderReviewList(sortReviewList, reviewUl);
+    });
 
-  let reviewH3 = document.createElement("h3");
-  reviewH3.innerHTML = `Reviewed Book`;
+    let reviewH3 = document.createElement("h3");
+    reviewH3.innerHTML = `Reviewed Book`;
 
-  let h3AndSort2 = document.createElement("div");
-  h3AndSort2.classList = "h3AndSort";
-  h3AndSort2.append(reviewH3, sortReviewSelect);
-  let reviewDiv = document.createElement("div");
-  reviewDiv.append(h3AndSort2, reviewUl);
-  reviewDiv.classList = "list";
-  bookLists.append(reviewDiv);
+    let h3AndSort2 = document.createElement("div");
+    h3AndSort2.classList = "h3AndSort";
+    h3AndSort2.append(reviewH3, sortReviewSelect);
+    let reviewDiv = document.createElement("div");
+    reviewDiv.append(h3AndSort2, reviewUl);
+    reviewDiv.classList = "list";
+    bookLists.append(reviewDiv);
+  }
 };
 // 2-1-1, Color Theme
-const renderColors = async (DOM) => {
-  let response = await axios.get(`http://localhost:1337/api/colors`, {
-    headers: {
-      Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-    },
-  });
-  let colors = response.data.data;
+const themeColor = async () => {
+  let response = await axios.get(`http://localhost:1337/api/theme`);
+  let color = response.data.data.attributes.color;
+  let backgroundColor;
 
-  // Render Color Options
-  let selectColors = document.createElement("select");
-  selectColors.id = "colorSelect";
-  let defaultOption = document.createElement("option");
-  defaultOption.value = "";
-  defaultOption.innerText = "Choose color theme";
-  defaultOption.selected = "selected";
-  selectColors.append(defaultOption);
-  colors.forEach((color) => {
-    let colorOption = document.createElement("option");
-    colorOption.value = color.id;
-    colorOption.innerText = color.attributes.theme;
-    selectColors.append(colorOption);
-  });
-  DOM.prepend(selectColors);
-};
-const colorSelect = async () => {
-  let selectedColors = document.querySelector("#colorSelect");
-  selectedColors.addEventListener("change", async (event) => {
-    let selectedValue = event.target.value;
-    let response = await axios.get(
-      `http://localhost:1337/api/colors/${selectedValue}`,
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-      }
-    );
-    let selectedColor = response.data.data;
-    document.body.style.background = selectedColor.attributes.background;
-  });
+  switch (color) {
+    case "Blue":
+      backgroundColor = "#9DDCDC";
+      break;
+    case "Pink":
+      backgroundColor = "#E67A7A";
+      break;
+    case "Yellow":
+      backgroundColor = "#f5f5dc";
+      break;
+    case "Purple":
+      backgroundColor = "#899CF7";
+      break;
+  }
+  document.body.style.background = backgroundColor;
 };
 // 2-1-2, Render Lists
 const renderReadingList = (userID, arr, location) => {
@@ -396,7 +386,9 @@ const renderLoginBooks = async () => {
   let readingList = userData.data.reading_lists;
 
   // Book Div
-  bookDiv.innerHTML = "";
+  if (bookDiv) {
+    bookDiv.innerHTML = "";
+  }
   let response = await axios.get("http://localhost:1337/api/books?populate=*");
   let books = response.data.data;
 
@@ -475,15 +467,22 @@ const renderLoginBooks = async () => {
     });
 
     bookCard.append(bookImage, bookDescription);
-    bookDiv.append(bookCard);
+    if (bookDiv) {
+      bookDiv.append(bookCard);
+    }
   });
 };
 
+let toggleContent = () => {
+  if (sessionStorage.getItem("token")) {
+    renderProfile();
+    renderLoginBooks();
+  } else {
+    renderLoginPage();
+    renderBooks();
+  }
+};
+
 //////////////////// Default Trigger Condition ////////////////////
-if (sessionStorage.getItem("token")) {
-  renderProfile();
-  renderLoginBooks();
-} else {
-  renderLoginPage();
-  renderBooks();
-}
+toggleContent();
+themeColor();
